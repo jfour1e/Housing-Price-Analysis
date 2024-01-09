@@ -7,23 +7,111 @@ housing_df = pd.read_csv('HPI_master.csv')
 housing_df = housing_df[housing_df['level'].str.lower().str.contains('usa')]
 housing_df = housing_df[housing_df['place_name'] == 'United States']
 housing_df = housing_df[housing_df['frequency'] == 'monthly']
-housing_df = housing_df.drop('NSA adjusted', axis=1)
+housing_df = housing_df.drop('index_nsa', axis=1)
 housing_df = housing_df.reset_index(drop=True)
+housing_df['Date'] = pd.to_datetime(housing_df['yr'].astype(str) + '-' + housing_df['period'].astype(str), format='%Y-%m')
+housing_df = housing_df.loc[housing_df['Date'] >= '11/01/1998']
 
-#yearly
-data = {
-    'Year': [2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990, 1989, 1988, 1987, 1986, 1985, 1984, 1983, 1982, 1981, 1980, 1979, 1978, 1977, 1976, 1975, 1974, 1973, 1972, 1971, 1970, 1969, 1968, 1967, 1966, 1965, 1964, 1963, 1962, 1961, 1960],
-    'Inflation Rate (%)': [8.00, 4.70, 1.23, 1.81, 2.44, 2.13, 1.26, 0.12, 1.62, 1.46, 2.07, 3.16, 1.64, -0.36, 3.84, 2.85, 3.23, 3.39, 2.68, 2.27, 1.59, 2.83, 3.38, 2.19, 1.55, 2.34, 2.93, 2.81, 2.61, 2.95, 3.03, 4.24, 5.40, 4.83, 4.08, 3.66, 1.90, 3.55, 4.30, 3.21, 6.13, 10.33, 13.55, 11.25, 7.63, 6.50, 5.74, 9.14, 11.05, 6.18, 3.27, 4.29, 5.84, 5.46, 4.27, 2.77, 3.02, 1.59, 1.28, 1.24, 1.20, 1.07, 1.46],
-    'Annual Change': [3.30, 3.46, -0.58, -0.63, 0.31, 0.87, 1.14, -1.50, 0.16, -0.60, -1.09, 1.52, 2.00, -4.19, 0.99, -0.37, -0.17, 0.72, 0.41, 0.68, -1.24, -0.55, 1.19, 0.64, -0.79, -0.59, 0.13, 0.20, -0.34, -0.08, -1.21, -1.16, 0.57, 0.75, 0.41, 1.77, -1.65, -0.75, 1.09, -2.92, -4.20, -3.21, 2.29, 3.62, 1.13, 0.76, -3.40, -1.91, 4.88, 2.91, -1.02, -1.55, 0.38, 1.19, 1.50, -0.24, 1.43, 0.31, 0.04, 0.04, 0.13, -0.39, -0.39]
-}
-inflation_df = pd.DataFrame(data)
+# Drop the original 'Year' and 'Month' columns if needed
+final_housing_df = housing_df.drop(['yr', 'period'], axis=1)
+final_housing_df = housing_df[['Date', 'index_sa']]
+final_housing_df = final_housing_df.reset_index(drop=True)
+final_housing_df['Date'] = pd.to_datetime(final_housing_df['Date'])
 
-#weekly
+
+# Assuming the current date is 2024-01-03
+end_date = pd.to_datetime("2023-12-31")
+
+# Generate the date range from January 1998 to the present
+date_range = pd.date_range(start="1998-01-01", end=end_date, freq="MS")
+
+# Extract month-year combinations with numeric months
+month_year_combinations = date_range.strftime('%m-%Y')
+
+data_list = [
+    2.2, 2.3, 2.1, 2.1, 2.2, 2.2, 2.2, 2.5, 2.5, 2.3, 2.3, 2.4, 
+    2.4, 2.1, 2.1, 2.2, 2.0, 2.1, 2.1, 1.9, 2.0, 2.1, 2.1, 1.9, 
+    2.0, 2.2, 2.4, 2.3, 2.4, 2.5, 2.5, 2.6, 2.6, 2.5, 2.6, 2.6, 
+    2.6, 2.7, 2.7, 2.6, 2.5, 2.7, 2.7, 2.7, 2.6, 2.6, 2.8, 2.7, 
+    2.6, 2.6, 2.4, 2.5, 2.5, 2.3, 2.2, 2.4, 2.2, 2.2, 2.0, 1.9, 
+    1.9, 1.7, 1.7, 1.5, 1.6, 1.5, 1.5, 1.3, 1.2, 1.3, 1.1, 1.1, 
+    1.1, 1.2, 1.6, 1.8, 1.7, 1.9, 1.8, 1.7, 2.0, 2.0, 2.2, 2.2,
+    2.3, 2.4, 2.3, 2.2, 2.2, 2.0, 2.1, 2.1, 2.0, 2.1, 2.1, 2.2,
+    2.1, 2.1, 2.1, 2.3, 2.4, 2.6, 2.7, 2.8, 2.9, 2.7, 2.6, 2.6,
+    2.7, 2.7, 2.5, 2.3, 2.2, 2.2, 2.2, 2.1, 2.1, 2.2, 2.3, 2.4,
+    2.5, 2.3, 2.4, 2.3, 2.3, 2.4, 2.5, 2.5, 2.5, 2.2, 2.0, 1.8,
+    1.7, 1.8, 1.8, 1.9, 1.8, 1.7, 1.5, 1.4, 1.5, 1.7, 1.7, 1.8,
+    1.6, 1.3, 1.1, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.6, 0.8, 0.8,
+    1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.0, 2.1, 2.2, 2.2,
+    2.3, 2.2, 2.3, 2.3, 2.3, 2.2, 2.1, 1.9, 2.0, 2.0, 1.9, 1.9,
+    1.9, 2.0, 1.9, 1.7, 1.7, 1.6, 1.7, 1.8, 1.7, 1.7, 1.7, 1.7,
+    1.6, 1.6, 1.7, 1.8, 2.0, 1.9, 1.9, 1.7, 1.7, 1.8, 1.7, 1.6,
+    1.6, 1.7, 1.8, 1.8, 1.7, 1.8, 1.8, 1.8, 1.9, 1.9, 2.0, 2.1,
+    2.2, 2.3, 2.2, 2.1, 2.2, 2.2, 2.2, 2.3, 2.2, 2.1, 2.1, 2.2,
+    2.3, 2.2, 2.0, 1.9, 1.7, 1.7, 1.7, 1.7, 1.7, 1.8, 1.7, 1.8,
+    1.8, 1.8, 2.1, 2.1, 2.2, 2.3, 2.4, 2.2, 2.2, 2.1, 2.2, 2.2,
+    2.2, 2.1, 2.0, 2.1, 2.0, 2.1, 2.2, 2.4, 2.4, 2.3, 2.3, 2.3,
+    2.3, 2.4, 2.1, 1.4, 1.2, 1.2, 1.6, 1.7, 1.7, 1.6, 1.6, 1.6,
+    1.4, 1.3, 1.6, 3.0, 3.8, 4.5, 4.3, 4.0, 4.0, 4.6, 4.9, 5.5,
+    6.0, 6.4, 6.5, 6.2, 6.0, 5.9, 5.9, 6.3, 6.6, 6.3, 6.0, 5.7,
+    5.6, 5.5, 5.6, 5.5, 5.3, 4.8, 4.7, 4.3, 4.1, 4.0, 4.0, 0.0
+]
+
+inflation_df = pd.DataFrame({'Date': month_year_combinations, 'Inflation': data_list})
+inflation_df['Date'] = pd.to_datetime(inflation_df['Date'])
+
+# Merge DataFrames based on the 'Date' column
+merged_df = pd.merge(inflation_df, final_housing_df, on='Date')
+
+#weekly from 1990 
 ten_year_yield_df = pd.read_csv('10-year-yield.csv')
+yield_df = ten_year_yield_df.iloc[::-1]
+yield_df = yield_df.reset_index(drop=True)
+yield_df['Date'] = pd.to_datetime(yield_df['Date'])
+yield_after1998_df = yield_df.loc[yield_df['Date'] >= '11/24/1998']
+new_yield_df = yield_after1998_df.reset_index(drop=True)
+
+new_yield_df['Date'] = new_yield_df['Date'].dt.strftime('%Y-%m-%d')
+
 
 spyticker = yf.Ticker("SPY")
-SPY_df = spyticker.history(period="max", interval="1wk", start="1998-12-01", end="2023-01-01" , auto_adjust=True, rounding=True)
+SPY_df = spyticker.history(period="max", interval="1wk", start="1998-11-29", end="2024-01-03" , auto_adjust=True, rounding=True)
 SPY_df = SPY_df.drop(['Dividends', 'Stock Splits', 'Capital Gains'], axis=1)
-SPY_df.head()
-#only important column is spy close 
-#data from 1998
+SPY_df.index = SPY_df.index.strftime('%Y-%m-%d')
+new_SPY = SPY_df.reset_index()
+
+result = pd.merge(new_yield_df, new_SPY, left_index=True, right_index=True)
+result = result.drop(['Open_x', 'High_x', 'Low_x', 'Date_x','High_y', 'Low_y', 'Volume' ], axis=1)
+
+# Rename columns
+result.rename(columns={'Date_y': 'Date', 'Open_y': 'SPY Open', 'Close': 'SPY Close'}, inplace=True)
+new_order = ['Date', 'Price', 'Change %', 'SPY Open', 'SPY Close']
+
+# Rearrange the order of columns
+result = result[new_order]
+
+start_date = '1998-11-29'
+end_date = pd.to_datetime('today')
+
+# Generate a date range with weekly frequency
+date_range = pd.date_range(start=start_date, end=end_date, freq='W-Mon')
+
+# Create a DataFrame with the date range
+df = pd.DataFrame({'Date': date_range})
+df['Date'] = pd.to_datetime(df['Date'])
+df['Inflation'] = None
+df['index_sa'] = None
+
+
+for index1, row1 in df.iterrows(): 
+    for index2, row2 in merged_df.iterrows(): 
+        if(row2['Date'].year == row1['Date'].year) & (row1['Date'].month == row2['Date'].month): 
+            df.at[index1, 'Inflation'] = row2['Inflation']
+            df.at[index1, 'index_sa'] = row2['index_sa']
+
+filtered_df = df[df['Date'] <= '2023-11-01']
+filtered_df['Date'] = pd.to_datetime(filtered_df['Date'])
+result['Date'] = pd.to_datetime(result['Date'])
+
+final_df = pd.merge(filtered_df, result, on='Date')
+
