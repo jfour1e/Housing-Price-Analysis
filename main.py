@@ -81,11 +81,11 @@ SPY_df.index = SPY_df.index.strftime('%Y-%m-%d')
 new_SPY = SPY_df.reset_index()
 
 result = pd.merge(new_yield_df, new_SPY, left_index=True, right_index=True)
-result = result.drop(['Open_x', 'High_x', 'Low_x', 'Date_x','High_y', 'Low_y', 'Volume' ], axis=1)
+result = result.drop(['Open_x', 'High_x', 'Low_x', 'Date_x','High_y', 'Low_y'], axis=1)
 
 # Rename columns
 result.rename(columns={'Date_y': 'Date', 'Open_y': 'SPY Open', 'Close': 'SPY Close'}, inplace=True)
-new_order = ['Date', 'Price', 'Change %', 'SPY Open', 'SPY Close']
+new_order = ['Date', 'Price', 'Change %', 'SPY Open', 'SPY Close', 'Volume']
 
 # Rearrange the order of columns
 result = result[new_order]
@@ -115,3 +115,4 @@ result['Date'] = pd.to_datetime(result['Date'])
 
 final_df = pd.merge(filtered_df, result, on='Date')
 
+print(final_df)
