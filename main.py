@@ -2,6 +2,11 @@
 import pandas as pd 
 import numpy as np 
 import yfinance as yf
+#neural network import statements
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error
 
 #Dataframe has monthly occuring data starting from 1991
 #load dataset 
@@ -95,7 +100,6 @@ vix_data = vix_data.rename(columns= {'Open': 'Vix Open','Close': 'Vix Close'})
 merged_df = pd.merge(inflation_df, final_housing_df, on='Date')
 
 
-
 #import 10 year bond yield - weekly data starting from 1990 
 ten_year_yield_df = pd.read_csv('10-year-yield.csv')
 
@@ -182,5 +186,36 @@ final_df['Bond % Change'] = final_df['Bond % Change'].str.replace('%', '')
 final_df['Bond % Change'] = pd.to_numeric(final_df['Bond % Change'])
 
 #final dataframe 
-print(final_df)
+#print(final_df)
 
+numerical_columns = ["Inflation", "index_sa",'Vix Close', "Bond Price", "SPY Open", "SPY Close", 'Volume']
+
+#separate out features for prediction 
+features = ['Inflation'	,'index_sa'	,'Bond % Change','VIX % Change','Volume % Change']
+target = "SPY % Change"
+
+# Split the data into training and testing sets
+train_df, test_df = train_test_split(final_df, test_size=0.2, random_state=42)
+
+# Standardize the features using StandardScaler
+scaler = StandardScaler()
+train_df[features] = scaler.fit_transform(train_df[features])
+test_df[features] = scaler.transform(test_df[features])
+
+#create the neural network architecture 
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train the model
+model.fit(train_df[features], train_df[target], epochs=40, batch_size=8, validation_data=(test_df[features], test_df[target]))
+
+# Evaluate the model on the test set
+predictions = model.predict(test_df[features])
+mse = mean_squared_error(test_df[target], predictions)
+print(f"Mean Squared Error on the test set: {mse}")
