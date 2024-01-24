@@ -219,3 +219,4 @@ model.fit(train_df[features], train_df[target], epochs=40, batch_size=8, validat
 predictions = model.predict(test_df[features])
 mse = mean_squared_error(test_df[target], predictions)
 print(f"Mean Squared Error on the test set: {mse}")
+
